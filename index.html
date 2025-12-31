@@ -282,6 +282,7 @@
         </div>
 
         <div class="right">
+          <button id="btnBT" class="btn pill primary">BT: ON</button>
           <button id="btnMute" class="btn pill">Mute</button>
           <input id="vol" class="range" type="range" min="0" max="1" step="0.01" value="0.85" style="width:140px" />
         </div>
@@ -391,6 +392,63 @@ const hudTitle = document.getElementById("hudTitle");
 const hudSub = document.getElementById("hudSub");
 const hudTags = document.getElementById("hudTags");
 
+const btnBT = document.getElementById("btnBT");
+let btMode = true;
+
+function applyPreset_BT(on){
+  if(!preGain) return;
+
+  if(on){
+    preGain.gain.value = 0.90;
+
+    hpf.frequency.value = 32;
+    hpf.Q.value = 0.7;
+
+    lowShelf.frequency.value = 88;
+    lowShelf.gain.value = 3.2;
+
+    mudCut.frequency.value = 240;
+    mudCut.Q.value = 1.05;
+    mudCut.gain.value = -4.0;
+
+    body.frequency.value = 520;
+    body.Q.value = 0.9;
+    body.gain.value = 1.2;
+
+    presence.frequency.value = 2600;
+    presence.Q.value = 0.95;
+    presence.gain.value = 2.2;
+
+    comp.threshold.value = -16;
+    comp.knee.value = 22;
+    comp.ratio.value = 3.0;
+    comp.attack.value = 0.010;
+    comp.release.value = 0.18;
+
+    outGain.gain.value = 0.98;
+  } else {
+    // Flat / near-bypass (still keep a tiny HPF for safety)
+    preGain.gain.value = 0.98;
+    hpf.frequency.value = 26;
+    hpf.Q.value = 0.7;
+
+    lowShelf.gain.value = 0;
+    mudCut.gain.value = 0;
+    body.gain.value = 0;
+    presence.gain.value = 0;
+
+    comp.threshold.value = -8;
+    comp.ratio.value = 1.2;
+  }
+}
+
+btnBT.onclick = ()=>{
+  btMode = !btMode;
+  btnBT.textContent = btMode ? "BT: ON" : "BT: OFF";
+  btnBT.classList.toggle("primary", btMode);
+  applyPreset_BT(btMode);
+};
+
 function persist(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -432,17 +490,66 @@ function setHUD(){
 
 // ---------- Audio + Analyzer ----------
 let ctx, analyser, srcNode, dataTime, dataFreq;
+
+// Mastering chain nodes
+let preGain, hpf, lowShelf, mudCut, body, presence, comp, outGain;
 let raf = 0;
 
 function ensureAudioGraph(){
   if(ctx) return;
+
   ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Analyzer (keep as you had, but after processing for better visuals)
   analyser = ctx.createAnalyser();
   analyser.fftSize = 2048;
   analyser.smoothingTimeConstant = 0.85;
 
+  // Source
   srcNode = ctx.createMediaElementSource(audio);
-  srcNode.connect(analyser);
+
+  // --- Mastering Chain (SwampHop / CDA Midnight tuning) ---
+  preGain = ctx.createGain();
+
+  // High-pass to remove inaudible rumble
+  hpf = ctx.createBiquadFilter();
+  hpf.type = "highpass";
+
+  // Low shelf for thump
+  lowShelf = ctx.createBiquadFilter();
+  lowShelf.type = "lowshelf";
+
+  // Mud cut (boxiness)
+  mudCut = ctx.createBiquadFilter();
+  mudCut.type = "peaking";
+
+  // Body bump (helps BT speakers that scoop mids)
+  body = ctx.createBiquadFilter();
+  body.type = "peaking";
+
+  // Presence for rasp / vocal clarity
+  presence = ctx.createBiquadFilter();
+  presence.type = "peaking";
+
+  // Dynamics compressor (tightens + protects)
+  comp = ctx.createDynamicsCompressor();
+
+  // Output gain (post-comp makeup)
+  outGain = ctx.createGain();
+
+  // Wire it up
+  srcNode
+    .connect(preGain)
+    .connect(hpf)
+    .connect(lowShelf)
+    .connect(mudCut)
+    .connect(body)
+    .connect(presence)
+    .connect(comp)
+    .connect(outGain);
+
+  // Send to analyzer + destination
+  outGain.connect(analyser);
   analyser.connect(ctx.destination);
 
   dataTime = new Uint8Array(analyser.fftSize);
@@ -450,7 +557,11 @@ function ensureAudioGraph(){
 }
 
 async function play(){
+  const isFirstTime = !ctx;
   ensureAudioGraph();
+  if (isFirstTime) {
+    applyPreset_BT(true);
+  }
   if(ctx.state === "suspended") await ctx.resume();
   await audio.play();
 }
