@@ -388,14 +388,7 @@ let state = {
   uiHidden: false,
   vol: 0.85,
 };
-try{
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-  if(saved && typeof saved === "object"){
-    state = { ...state, ...saved };
-    state.i = Math.max(0, Math.min(tracks.length-1, state.i|0));
-    if(!VIZ_MODES.some(v=>v.id===state.viz)) state.viz = tracks[state.i].defaultViz || "bars";
-  }
-}catch{}
+
 
 // ---------- DOM ----------
 const sidebar = document.getElementById("sidebar");
@@ -607,6 +600,11 @@ function togglePlay(){
 }
 
 function loadTrack(i, autoplay=false){
+  if (!tracks || tracks.length === 0) {
+    hudTitle.textContent = "Playlist empty";
+    hudSub.textContent = "Check playlist.json";
+    return;
+  }
   state.i = (i + tracks.length) % tracks.length;
 
   // Per-track default viz only on first time, or if current viz is invalid
