@@ -922,45 +922,78 @@ btnToggleSidebar.onclick = ()=> sidebar.classList.toggle("open");
 btnCloseSidebar.onclick  = ()=> sidebar.classList.remove("open");
 
 async function main() {
-    try {
-        const response = await fetch('playlist.json');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const mainTracks = await response.json();
-        
-        const newPlayQueue = [];
-        let sweeperIndex = 0;
-        for (let i = 0; i < mainTracks.length; i++) {
-            newPlayQueue.push(mainTracks[i]);
-            if ((i + 1) % 2 === 0 && i < mainTracks.length - 1) {
-                // Add a sweeper, rotating through the list
-                const sweeper = { ...sweepers[sweeperIndex % sweepers.length] };
-                newPlayQueue.push(sweeper);
-                sweeperIndex++;
-            }
-        }
-        
-        tracks = newPlayQueue;
+  try {
+    const response = await fetch('playlist.json');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const playlist = await response.json();
 
-        // This part is from the original state loading, but now it runs after tracks are loaded.
-        try{
-            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-            if(saved && typeof saved === "object"){
-                state = { ...state, ...saved };
-                state.i = Math.max(0, Math.min(tracks.length-1, state.i|0));
-                if(!VIZ_MODES.some(v=>v.id===state.viz)) state.viz = tracks[state.i]?.defaultViz || "bars";
-            }
-        }catch{}
-        
-        // Initial load calls
-        renderList();
-        loadTrack(state.i, false);
-        state.uiHidden && controls.classList.add("hidden");
-        scheduleAutohide();
-
-    } catch (error) {
-        console.error("Failed to initialize playlist:", error);
-        trackList.innerHTML = `<div class="track"><div class="t" style="color:red">Error: Could not load playlist.json</div></div>`;
+    if (!playlist.tracks || !Array.isArray(playlist.tracks)) {
+      throw new Error("playlist.json missing tracks[] array");
     }
+
+    const mainTracks = playlist.tracks;
+
+    const newPlayQueue = [];
+    let sweeperIndex = 0;
+
+    for (let i = 0; i < mainTracks.length; i++) {
+      const tr = mainTracks[i];
+
+      // Normalize fields your UI expects
+      newPlayQueue.push({
+        title: tr.title,
+        artist: tr.artist,
+        src: (playlist.meta?.basePath || "") + tr.src,
+        tags: tr.tags || [],
+        defaultViz: tr.viz || "bars"
+      });
+
+      // Insert sweepers every 2 songs
+      if (
+        playlist.sweepers?.enabled &&
+        (i + 1) % playlist.sweepers.insertEverySongs === 0 &&
+        i < mainTracks.length - 1
+      ) {
+        const s = playlist.sweepers.rotation[
+          sweeperIndex % playlist.sweepers.rotation.length
+        ];
+        newPlayQueue.push({
+          title: s.title,
+          artist: s.artist,
+          src: (playlist.meta?.basePath || "") + s.src,
+          tags: ["sweeper"],
+          defaultViz: s.viz
+        });
+        sweeperIndex++;
+      }
+    }
+
+    tracks = newPlayQueue;
+
+    // Restore saved state
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (saved && typeof saved === "object") {
+        state = { ...state, ...saved };
+        state.i = Math.max(0, Math.min(tracks.length - 1, state.i | 0));
+        if (!VIZ_MODES.some(v => v.id === state.viz)) {
+          state.viz = tracks[state.i]?.defaultViz || "bars";
+        }
+      }
+    } catch {}
+
+    renderList();
+    loadTrack(state.i, false);
+    if (state.uiHidden) controls.classList.add("hidden");
+    scheduleAutohide();
+
+  } catch (error) {
+    console.error("Failed to initialize playlist:", error);
+    trackList.innerHTML =
+      `<div class="track"><div class="t" style="color:red">
+        Error loading playlist.json
+      </div></div>`;
+  }
 }
 
 main();
