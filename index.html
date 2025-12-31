@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>EchoVerse • New Year’s Player</title>
+  <style>
+    :root{
+      --bg0:#05060b; --bg1:#0b0d16; --card:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.10); --text:rgba(255,255,255,.88); --muted:rgba(255,255,255,.62);
+      --pill:rgba(255,255,255,.10); --pill2:rgba(255,255,255,.16);
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(120,200,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 40%, rgba(180,120,255,.14), transparent 62%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+      overflow:hidden;
+    }
+
+    /* Layout */
+    .app{
+      height:100%;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:14px;
+      padding:14px;
+    }
+    @media (max-width: 980px){
+      .app{grid-template-columns: 1fr; padding:10px}
+      .sidebar{position:fixed; inset:10px 10px auto 10px; height: 56vh; z-index:30; transform:translateY(-120%); transition:.22s ease; }
+      .sidebar.open{transform:translateY(0)}
+      .stage{grid-row:1}
+    }
+
+    .panel{
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    /* Sidebar */
+    .sidebar{
+      display:flex; flex-direction:column;
+      min-height: 0;
+    }
+    .brand{
+      padding:14px 14px 10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+    }
+    .brand .left{display:flex; align-items:center; gap:10px}
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.22), transparent 60%),
+        linear-gradient(135deg, rgba(0,255,170,.22), rgba(255,90,220,.18));
+      border:1px solid var(--line);
+    }
+    .brand h1{margin:0;font-size:14px;letter-spacing:.6px}
+    .brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+    .btn{
+      appearance:none;border:1px solid var(--line); background:rgba(255,255,255,.06);
+      color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer;
+      display:inline-flex; align-items:center; gap:8px;
+      transition: .15s ease;
+      user-select:none;
+    }
+    .btn:hover{background:rgba(255,255,255,.09)}
+    .btn:active{transform:translateY(1px)}
+    .btn.small{padding:8px 10px; border-radius:12px; font-size:12px}
+    .btn.pill{border-radius:999px}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(0,255,170,.18), rgba(255,90,220,.14));
+      border-color: rgba(255,255,255,.14);
+    }
+    .pillrow{display:flex; gap:8px; flex-wrap:wrap}
+
+    .list{
+      padding:10px;
+      overflow:auto;
+      min-height:0;
+    }
+    .track{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+      cursor:pointer;
+      margin-bottom:10px;
+      transition:.15s ease;
+    }
+    .track:hover{background: rgba(255,255,255,.06)}
+    .track.active{
+      background: linear-gradient(135deg, rgba(0,255,170,.14), rgba(255,90,220,.10));
+      border-color: rgba(255,255,255,.16);
+    }
+    .track .t{font-weight:650; font-size:13px; letter-spacing:.2px}
+    .track .a{font-size:12px; color:var(--muted); margin-top:4px}
+    .meta{
+      padding:12px 14px;
+      border-top:1px solid var(--line);
+      display:flex; flex-direction:column; gap:10px;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.22));
+    }
+    .meta .row{display:flex; gap:10px; justify-content:space-between; align-items:center}
+    .kbd{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      padding:6px 10px; border-radius:999px;
+      background: rgba(255,255,255,.05);
+      white-space:nowrap;
+    }
+
+    /* Stage */
+    .stage{
+      position:relative;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+    .vizWrap{
+      position:relative;
+      flex: 1 1 auto;
+      min-height:0;
+      overflow:hidden;
+      border-bottom:1px solid var(--line);
+      background: radial-gradient(900px 400px at 50% 30%, rgba(255,255,255,.06), transparent 60%);
+    }
+    canvas{width:100%; height:100%; display:block}
+    .overlayTop{
+      position:absolute; inset:12px 12px auto 12px;
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+      pointer-events:none;
+    }
+    .hud{
+      pointer-events:auto;
+      display:flex; flex-direction:column; gap:8px;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      backdrop-filter: blur(10px);
+      max-width:min(560px, 76vw);
+    }
+    .hud .title{font-size:16px; font-weight:750; letter-spacing:.2px; margin:0}
+    .hud .sub{font-size:12px; color:var(--muted); margin:2px 0 0}
+    .hud .tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+    .tag{font-size:12px; padding:6px 10px; border-radius:999px; background: var(--pill); border:1px solid rgba(255,255,255,.10); color:var(--muted)}
+    .rightBtns{
+      pointer-events:auto;
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
+    }
+
+    /* Controls */
+    .controls{
+      padding:12px;
+      display:flex; gap:12px; align-items:center;
+      background: rgba(0,0,0,.24);
+      backdrop-filter: blur(10px);
+    }
+    .controls .left{display:flex; gap:10px; align-items:center}
+    .controls .mid{flex:1; display:flex; flex-direction:column; gap:8px; min-width:0}
+    .controls .right{display:flex; gap:8px; align-items:center; justify-content:flex-end}
+    .range{
+      width:100%;
+      accent-color: auto;
+    }
+    .timeRow{display:flex; justify-content:space-between; font-size:12px; color:var(--muted)}
+    .fade{
+      opacity:1; transition:opacity .25s ease;
+    }
+    .fade.hidden{
+      opacity:0; pointer-events:none;
+    }
+
+    /* Mobile top bar */
+    .mobileBar{
+      display:none;
+      position:fixed; left:10px; right:10px; top:10px; z-index:40;
+      gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 10px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.30);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+    @media (max-width: 980px){
+      .mobileBar{display:flex}
+      .app{padding-top:74px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile top bar -->
+  <div class="mobileBar panel">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <div style="font-weight:750;font-size:13px;letter-spacing:.4px">EchoVerse • New Year</div>
+        <div style="font-size:12px;color:var(--muted)">Tap playlist to switch</div>
+      </div>
+    </div>
+    <button id="btnToggleSidebar" class="btn small pill primary">Playlist</button>
+  </div>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar panel">
+      <div class="brand">
+        <div class="left">
+          <div class="logo"></div>
+          <div>
+            <h1>EchoVerse • New Year’s Player</h1>
+            <p>Switch tracks • switch visuals</p>
+          </div>
+        </div>
+        <button id="btnCloseSidebar" class="btn small pill" style="display:none">Close</button>
+      </div>
+
+      <div class="list" id="trackList"></div>
+
+      <div class="meta">
+        <div class="row">
+          <div class="kbd">Space: Play/Pause</div>
+          <div class="kbd">V: Visualizer</div>
+        </div>
+        <div class="pillrow">
+          <button id="btnPrev" class="btn small pill">⟵ Prev</button>
+          <button id="btnNext" class="btn small pill">Next ⟶</button>
+          <button id="btnViz" class="btn small pill primary">Visualizer</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Stage -->
+    <main class="stage panel">
+      <div class="vizWrap" id="vizWrap">
+        <canvas id="cv"></canvas>
+
+        <div class="overlayTop">
+          <div class="hud">
+            <div>
+              <p class="title" id="hudTitle">—</p>
+              <p class="sub" id="hudSub">—</p>
+            </div>
+            <div class="tags" id="hudTags"></div>
+          </div>
+
+          <div class="rightBtns">
+            <button id="btnFull" class="btn small pill">Full Screen</button>
+            <button id="btnHide" class="btn small pill">Hide UI</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls fade" id="controls">
+        <div class="left">
+          <button id="btnPlay" class="btn pill primary">▶</button>
+          <button id="btnBack10" class="btn pill">↺ 10s</button>
+          <button id="btnFwd10" class="btn pill">10s ↻</button>
+        </div>
+
+        <div class="mid">
+          <input id="seek" class="range" type="range" min="0" max="1000" value="0" />
+          <div class="timeRow">
+            <span id="tCur">0:00</span>
+            <span id="tDur">0:00</span>
+          </div>
+        </div>
+
+        <div class="right">
+          <button id="btnMute" class="btn pill">Mute</button>
+          <input id="vol" class="range" type="range" min="0" max="1" step="0.01" value="0.85" style="width:140px" />
+        </div>
+      </div>
+
+      <audio id="audio" crossorigin="anonymous"></audio>
+    </main>
+  </div>
+
+<script>
+/**
+ * ✅ HOW TO USE
+ * 1) Put your MP3 files in the same folder, or use full URLs.
+ * 2) Update `tracks[].src` below.
+ * 3) Open the HTML in a browser. (For local files, Chrome may need a local server for analyzer.)
+ */
+
+const STORAGE_KEY = "ev_newyear_player_v1";
+
+const VIZ_MODES = [
+  { id:"bars",     name:"Bars" },
+  { id:"wave",     name:"Waveform" },
+  { id:"radial",   name:"Radial Rings" },
+  { id:"particles",name:"Particles" },
+  { id:"aurora",   name:"Aurora" },
+];
+
+const tracks = [
+  {
+    title: "New Year’s Echo 2026 (CDA Edition)",
+    artist: "EchoVerse • AeroVista",
+    tags: ["cinematic","hopeful","CDA"],
+    src: "audio/new_years_echo_2026.mp3",  // <-- CHANGE ME
+    defaultViz: "aurora"
+  },
+  {
+    title: "Lake Effect Countdown",
+    artist: "EchoVerse • AeroVista",
+    tags: ["party","chant","downtown"],
+    src: "audio/lake_effect_countdown.mp3", // <-- CHANGE ME
+    defaultViz: "bars"
+  },
+  {
+    title: "Aurora Over Sherman",
+    artist: "EchoVerse • AeroVista",
+    tags: ["chillwave","dreamy","night drive"],
+    src: "audio/aurora_over_sherman.mp3", // <-- CHANGE ME
+    defaultViz: "wave"
+  },
+  {
+    title: "EchoVerse Midnight Radio",
+    artist: "EchoVerse • AeroVista",
+    tags: ["indie-electro","anthem","radio"],
+    src: "audio/echoverse_midnight_radio.mp3", // <-- CHANGE ME
+    defaultViz: "radial"
+  },
+  {
+    title: "SwampHop: Resolution Run (2026)",
+    artist: "EchoVerse • AeroVista",
+    tags: ["swamphop","140 halftime","8-bit"],
+    src: "audio/resolution_run_2026.mp3", // <-- CHANGE ME
+    defaultViz: "particles"
+  }
+];
+
+// ---------- State ----------
+let state = {
+  i: 0,
+  viz: VIZ_MODES[0].id,
+  uiHidden: false,
+  vol: 0.85,
+};
+try{
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+  if(saved && typeof saved === "object"){
+    state = { ...state, ...saved };
+    state.i = Math.max(0, Math.min(tracks.length-1, state.i|0));
+    if(!VIZ_MODES.some(v=>v.id===state.viz)) state.viz = tracks[state.i].defaultViz || "bars";
+  }
+}catch{}
+
+// ---------- DOM ----------
+const sidebar = document.getElementById("sidebar");
+const btnToggleSidebar = document.getElementById("btnToggleSidebar");
+const btnCloseSidebar  = document.getElementById("btnCloseSidebar");
+
+const trackList = document.getElementById("trackList");
+
+const audio = document.getElementById("audio");
+const btnPlay = document.getElementById("btnPlay");
+const btnPrev = document.getElementById("btnPrev");
+const btnNext = document.getElementById("btnNext");
+const btnBack10 = document.getElementById("btnBack10");
+const btnFwd10  = document.getElementById("btnFwd10");
+const btnViz = document.getElementById("btnViz");
+const btnFull = document.getElementById("btnFull");
+const btnHide = document.getElementById("btnHide");
+const controls = document.getElementById("controls");
+
+const seek = document.getElementById("seek");
+const tCur = document.getElementById("tCur");
+const tDur = document.getElementById("tDur");
+const vol = document.getElementById("vol");
+const btnMute = document.getElementById("btnMute");
+
+const hudTitle = document.getElementById("hudTitle");
+const hudSub = document.getElementById("hudSub");
+const hudTags = document.getElementById("hudTags");
+
+function persist(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function fmtTime(s){
+  if(!isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s/60);
+  const r = Math.floor(s%60);
+  return `${m}:${String(r).padStart(2,"0")}`;
+}
+
+// ---------- Playlist UI ----------
+function renderList(){
+  trackList.innerHTML = "";
+  tracks.forEach((tr, idx)=>{
+    const div = document.createElement("div");
+    div.className = "track" + (idx===state.i ? " active":"");
+    div.innerHTML = `
+      <div class="t">${tr.title}</div>
+      <div class="a">${tr.artist}</div>
+    `;
+    div.onclick = ()=> loadTrack(idx, true);
+    trackList.appendChild(div);
+  });
+}
+
+function setHUD(){
+  const tr = tracks[state.i];
+  hudTitle.textContent = tr.title;
+  hudSub.textContent = tr.artist + " • Visualizer: " + (VIZ_MODES.find(v=>v.id===state.viz)?.name || state.viz);
+  hudTags.innerHTML = "";
+  (tr.tags||[]).forEach(tag=>{
+    const s = document.createElement("span");
+    s.className = "tag";
+    s.textContent = tag;
+    hudTags.appendChild(s);
+  });
+}
+
+// ---------- Audio + Analyzer ----------
+let ctx, analyser, srcNode, dataTime, dataFreq;
+let raf = 0;
+
+function ensureAudioGraph(){
+  if(ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.85;
+
+  srcNode = ctx.createMediaElementSource(audio);
+  srcNode.connect(analyser);
+  analyser.connect(ctx.destination);
+
+  dataTime = new Uint8Array(analyser.fftSize);
+  dataFreq = new Uint8Array(analyser.frequencyBinCount);
+}
+
+async function play(){
+  ensureAudioGraph();
+  if(ctx.state === "suspended") await ctx.resume();
+  await audio.play();
+}
+
+function pause(){ audio.pause(); }
+
+function togglePlay(){
+  if(audio.paused) play();
+  else pause();
+}
+
+function loadTrack(i, autoplay=false){
+  state.i = (i + tracks.length) % tracks.length;
+
+  // Per-track default viz only on first time, or if current viz is invalid
+  const def = tracks[state.i].defaultViz;
+  if(def && VIZ_MODES.some(v=>v.id===def)){
+    state.viz = def;
+  }
+
+  audio.src = tracks[state.i].src;
+  audio.load();
+  renderList();
+  setHUD();
+  persist();
+
+  if(autoplay) play().catch(()=>{ /* user gesture needed */ });
+
+  // On mobile: close sidebar
+  if(window.matchMedia("(max-width: 980px)").matches){
+    sidebar.classList.remove("open");
+  }
+}
+
+function next(){ loadTrack(state.i+1, true); }
+function prev(){ loadTrack(state.i-1, true); }
+
+// ---------- Seek/Volume ----------
+seek.addEventListener("input", ()=>{
+  if(!isFinite(audio.duration) || audio.duration<=0) return;
+  const p = seek.value/1000;
+  audio.currentTime = p * audio.duration;
+});
+
+vol.value = state.vol;
+audio.volume = state.vol;
+
+vol.addEventListener("input", ()=>{
+  state.vol = parseFloat(vol.value);
+  audio.volume = state.vol;
+  persist();
+});
+
+btnMute.onclick = ()=>{
+  audio.muted = !audio.muted;
+  btnMute.textContent = audio.muted ? "Unmute" : "Mute";
+};
+
+// ---------- Controls / UI hide ----------
+let hideTimer = null;
+function scheduleAutohide(){
+  if(state.uiHidden) return;
+  controls.classList.remove("hidden");
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(()=> controls.classList.add("hidden"), 2500);
+}
+["mousemove","touchstart","touchmove","keydown"].forEach(ev=>{
+  window.addEventListener(ev, scheduleAutohide, {passive:true});
+});
+
+btnHide.onclick = ()=>{
+  state.uiHidden = !state.uiHidden;
+  btnHide.textContent = state.uiHidden ? "Show UI" : "Hide UI";
+  controls.classList.toggle("hidden", state.uiHidden);
+  persist();
+};
+
+// ---------- Visualizer ----------
+const canvas = document.getElementById("cv");
+const vizWrap = document.getElementById("vizWrap");
+const g = canvas.getContext("2d", { alpha: true });
+
+function resize(){
+  const r = vizWrap.getBoundingClientRect();
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  canvas.width = Math.floor(r.width * dpr);
+  canvas.height = Math.floor(r.height * dpr);
+  g.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize", resize);
+resize();
+
+function cycleViz(){
+  const idx = VIZ_MODES.findIndex(v=>v.id===state.viz);
+  const nextIdx = (idx+1) % VIZ_MODES.length;
+  state.viz = VIZ_MODES[nextIdx].id;
+  setHUD();
+  persist();
+}
+btnViz.onclick = cycleViz;
+
+function energy(){
+  // simple average low-mid energy
+  let sum = 0;
+  const n = Math.min(80, dataFreq.length);
+  for(let i=0;i<n;i++) sum += dataFreq[i];
+  return sum / (n*255);
+}
+
+// Particles system
+const parts = Array.from({length: 110}, ()=>({
+  x: Math.random(), y: Math.random(),
+  vx:(Math.random()-.5)*0.12, vy:(Math.random()-.5)*0.12,
+  r: 0.8 + Math.random()*2.2
+}));
+
+function draw(){
+  raf = requestAnimationFrame(draw);
+  const w = vizWrap.clientWidth, h = vizWrap.clientHeight;
+
+  // background wash (subtle trailing)
+  g.fillStyle = "rgba(0,0,0,0.22)";
+  g.fillRect(0,0,w,h);
+
+  if(!analyser){
+    // idle placeholder
+    g.fillStyle = "rgba(255,255,255,0.06)";
+    g.fillRect(0,0,w,h);
+    g.fillStyle = "rgba(255,255,255,0.65)";
+    g.font = "600 14px system-ui";
+    g.fillText("Press Play to start visualizers", 16, h-18);
+    return;
+  }
+
+  analyser.getByteTimeDomainData(dataTime);
+  analyser.getByteFrequencyData(dataFreq);
+
+  const e = energy();
+  const t = performance.now()/1000;
+
+  if(state.viz === "bars"){
+    const bars = 72;
+    const step = Math.floor(dataFreq.length / bars);
+    const bw = w / bars;
+    for(let i=0;i<bars;i++){
+      const v = dataFreq[i*step]/255;
+      const bh = v * (h*0.72);
+      const x = i*bw;
+      const y = h - bh;
+      g.fillStyle = `rgba(255,255,255,${0.08 + v*0.55})`;
+      g.fillRect(x+2, y, Math.max(2,bw-4), bh);
+    }
+    // glow band
+    g.fillStyle = `rgba(255,255,255,${0.04 + e*0.12})`;
+    g.fillRect(0, h*0.70, w, h*0.30);
+  }
+
+  else if(state.viz === "wave"){
+    g.lineWidth = 2;
+    g.strokeStyle = `rgba(255,255,255,${0.35 + e*0.40})`;
+    g.beginPath();
+    const len = dataTime.length;
+    for(let i=0;i<len;i++){
+      const v = (dataTime[i]-128)/128;
+      const x = (i/(len-1))*w;
+      const y = h*0.50 + v*(h*0.22);
+      if(i===0) g.moveTo(x,y);
+      else g.lineTo(x,y);
+    }
+    g.stroke();
+  }
+
+  else if(state.viz === "radial"){
+    const cx=w/2, cy=h/2;
+    const rings = 5;
+    for(let r=1;r<=rings;r++){
+      const base = (Math.min(w,h)*0.10) * r;
+      const wobble = (0.02 + e*0.22) * base;
+      g.lineWidth = 2;
+      g.strokeStyle = `rgba(255,255,255,${0.08 + r*0.05 + e*0.30})`;
+      g.beginPath();
+      const pts = 220;
+      for(let i=0;i<=pts;i++){
+        const a = (i/pts)*Math.PI*2;
+        const idx = Math.floor((i/pts) * (dataFreq.length-1));
+        const amp = (dataFreq[idx]/255);
+        const rr = base + amp*wobble*(1 + 0.25*Math.sin(t*2 + r));
+        const x = cx + Math.cos(a)*rr;
+        const y = cy + Math.sin(a)*rr;
+        if(i===0) g.moveTo(x,y); else g.lineTo(x,y);
+      }
+      g.stroke();
+    }
+  }
+
+  else if(state.viz === "particles"){
+    const sp = 0.35 + e*1.6;
+    for(const p of parts){
+      p.x += p.vx*sp; p.y += p.vy*sp;
+      if(p.x< -0.05) p.x=1.05; if(p.x>1.05) p.x=-0.05;
+      if(p.y< -0.05) p.y=1.05; if(p.y>1.05) p.y=-0.05;
+
+      const px = p.x*w, py=p.y*h;
+      const glow = 0.10 + e*0.55;
+      g.fillStyle = `rgba(255,255,255,${glow})`;
+      g.beginPath();
+      g.arc(px, py, p.r*(1+e*1.6), 0, Math.PI*2);
+      g.fill();
+    }
+    // connecting lines (light)
+    g.strokeStyle = `rgba(255,255,255,${0.03 + e*0.10})`;
+    g.lineWidth = 1;
+    for(let i=0;i<parts.length;i+=3){
+      const a = parts[i], b = parts[(i+17)%parts.length];
+      g.beginPath();
+      g.moveTo(a.x*w, a.y*h);
+      g.lineTo(b.x*w, b.y*h);
+      g.stroke();
+    }
+  }
+
+  else if(state.viz === "aurora"){
+    // aurora ribbons as moving gradients
+    const bands = 3;
+    for(let i=0;i<bands;i++){
+      const y = h*(0.25 + i*0.18) + Math.sin(t*0.7 + i)*h*0.03;
+      const amp = (0.12 + e*0.45);
+      const hh = h*(0.18 + amp*0.18);
+
+      const grad = g.createLinearGradient(0, y, w, y+hh);
+      grad.addColorStop(0, `rgba(0,255,170,${0.05 + e*0.18})`);
+      grad.addColorStop(0.5, `rgba(255,255,255,${0.02 + e*0.10})`);
+      grad.addColorStop(1, `rgba(255,90,220,${0.04 + e*0.16})`);
+
+      g.fillStyle = grad;
+      g.beginPath();
+      g.moveTo(0, y);
+      for(let x=0;x<=w;x+=18){
+        const n = Math.sin(t*1.2 + x*0.01 + i*2) * hh*0.25;
+        const n2 = Math.cos(t*0.9 + x*0.008 + i) * hh*0.20;
+        g.lineTo(x, y + n + n2);
+      }
+      g.lineTo(w, y+hh);
+      g.lineTo(0, y+hh);
+      g.closePath();
+      g.fill();
+    }
+
+    // sprinkle stars
+    g.fillStyle = `rgba(255,255,255,${0.03 + e*0.06})`;
+    for(let k=0;k<30;k++){
+      const x = (Math.sin(t*0.7 + k*12.7)+1)/2 * w;
+      const y = (Math.cos(t*0.4 + k*9.1)+1)/2 * h*0.55;
+      g.fillRect(x, y, 1.2, 1.2);
+    }
+  }
+}
+
+function startVizLoop(){
+  if(raf) cancelAnimationFrame(raf);
+  g.clearRect(0,0,canvas.width,canvas.height);
+  raf = requestAnimationFrame(draw);
+}
+
+// ---------- Events ----------
+btnPlay.onclick = togglePlay;
+btnPrev.onclick = prev;
+btnNext.onclick = next;
+
+btnBack10.onclick = ()=> audio.currentTime = Math.max(0, audio.currentTime - 10);
+btnFwd10.onclick  = ()=> audio.currentTime = Math.min(audio.duration||Infinity, audio.currentTime + 10);
+
+audio.addEventListener("play", ()=>{
+  btnPlay.textContent = "⏸";
+  ensureAudioGraph();
+  startVizLoop();
+  scheduleAutohide();
+});
+audio.addEventListener("pause", ()=> btnPlay.textContent = "▶");
+audio.addEventListener("loadedmetadata", ()=>{
+  tDur.textContent = fmtTime(audio.duration);
+});
+audio.addEventListener("timeupdate", ()=>{
+  tCur.textContent = fmtTime(audio.currentTime);
+  if(isFinite(audio.duration) && audio.duration > 0){
+    seek.value = Math.floor((audio.currentTime / audio.duration) * 1000);
+  }
+});
+
+audio.addEventListener("ended", ()=> next());
+
+// Keyboard shortcuts
+window.addEventListener("keydown", (e)=>{
+  if(e.code === "Space"){ e.preventDefault(); togglePlay(); }
+  if(e.key.toLowerCase() === "v"){ cycleViz(); }
+  if(e.key === "ArrowRight"){ audio.currentTime = Math.min(audio.duration||Infinity, audio.currentTime + 5); }
+  if(e.key === "ArrowLeft"){ audio.currentTime = Math.max(0, audio.currentTime - 5); }
+});
+
+// Fullscreen
+btnFull.onclick = async ()=>{
+  const el = document.documentElement;
+  if(!document.fullscreenElement){
+    await el.requestFullscreen?.();
+  }else{
+    await document.exitFullscreen?.();
+  }
+};
+
+// Sidebar mobile toggle
+function syncMobileButtons(){
+  const isMobile = window.matchMedia("(max-width: 980px)").matches;
+  btnCloseSidebar.style.display = isMobile ? "inline-flex" : "none";
+}
+window.addEventListener("resize", syncMobileButtons);
+syncMobileButtons();
+
+btnToggleSidebar.onclick = ()=> sidebar.classList.toggle("open");
+btnCloseSidebar.onclick  = ()=> sidebar.classList.remove("open");
+
+// Initial load
+renderList();
+loadTrack(state.i, false);
+state.uiHidden && controls.classList.add("hidden");
+setHUD();
+scheduleAutohide();
+</script>
+</body>
+</html>
