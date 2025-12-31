@@ -5,6 +5,55 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>EchoVerse • New Year’s Player</title>
   <style>
+    .av-callout{
+      pointer-events:none;
+      padding:18px 22px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.10));
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+
+    .av-presents{
+      font-size:11px;
+      letter-spacing:3px;
+      font-weight:700;
+      color:rgba(255,255,255,.55);
+    }
+
+    .av-title{
+      margin-top:6px;
+      font-size:34px;
+      letter-spacing:4px;
+      font-weight:900;
+      line-height:1;
+      color:rgba(255,255,255,.95);
+      text-shadow:
+        0 0 24px rgba(0,255,170,.18),
+        0 0 48px rgba(255,90,220,.12);
+    }
+
+    .av-sub{
+      margin-top:8px;
+      font-size:13px;
+      letter-spacing:1.5px;
+      color:rgba(255,255,255,.65);
+    }
+    
+    .av-title.pulse{
+      animation: pulseGlow .22s ease-out;
+    }
+    @keyframes pulseGlow{
+      0%{ text-shadow: 0 0 12px rgba(255,255,255,.2); }
+      100%{
+        text-shadow:
+          0 0 28px rgba(0,255,170,.35),
+          0 0 60px rgba(255,90,220,.25);
+      }
+    }
+
     :root{
       --bg0:#05060b; --bg1:#0b0d16; --card:rgba(255,255,255,.06);
       --line:rgba(255,255,255,.10); --text:rgba(255,255,255,.88); --muted:rgba(255,255,255,.62);
@@ -68,8 +117,8 @@
         linear-gradient(135deg, rgba(0,255,170,.22), rgba(255,90,220,.18));
       border:1px solid var(--line);
     }
-    .brand h1{margin:0;font-size:14px;letter-spacing:.6px}
-    .brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+    .brand h1{margin:0; font-size:12px; letter-spacing:2px; text-transform:uppercase;}
+    .brand p{margin:2px 0 0; font-size:12px; color:var(--muted); letter-spacing:1px;}
     .btn{
       appearance:none;border:1px solid var(--line); background:rgba(255,255,255,.06);
       color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer;
@@ -154,8 +203,17 @@
       backdrop-filter: blur(10px);
       max-width:min(560px, 76vw);
     }
-    .hud .title{font-size:16px; font-weight:750; letter-spacing:.2px; margin:0}
-    .hud .sub{font-size:12px; color:var(--muted); margin:2px 0 0}
+    .hud .title{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:1px;
+      text-transform:uppercase;
+    }
+    .hud .sub{
+      font-size:12px;
+      letter-spacing:1px;
+      color:rgba(255,255,255,.6);
+    }
     .hud .tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
     .tag{font-size:12px; padding:6px 10px; border-radius:999px; background: var(--pill); border:1px solid rgba(255,255,255,.10); color:var(--muted)}
     .rightBtns{
@@ -223,8 +281,8 @@
         <div class="left">
           <div class="logo"></div>
           <div>
-            <h1>EchoVerse • New Year’s Player</h1>
-            <p>Switch tracks • switch visuals</p>
+            <h1>AeroVista Presents</h1>
+            <p>EchoVerse • SwampHop Transmission</p>
           </div>
         </div>
         <button id="btnCloseSidebar" class="btn small pill" style="display:none">Close</button>
@@ -251,6 +309,11 @@
         <canvas id="cv"></canvas>
 
         <div class="overlayTop">
+          <div class="av-callout">
+            <div class="av-presents">AEROVISTA PRESENTS</div>
+            <div class="av-title">ECHOVERSE</div>
+            <div class="av-sub">SwampHop • New Year Transmission</div>
+          </div>
           <div class="hud">
             <div>
               <p class="title" id="hudTitle">—</p>
@@ -701,6 +764,14 @@ function draw(){
 
   const e = energy();
   const t = performance.now()/1000;
+
+  const titleEl = document.querySelector('.av-title');
+  if (titleEl) {
+    if(e > 0.35 && !titleEl.classList.contains('pulse')){
+      titleEl.classList.add('pulse');
+      setTimeout(()=>titleEl.classList.remove('pulse'), 220);
+    }
+  }
 
   if(state.viz === "bars"){
     const bars = 72;

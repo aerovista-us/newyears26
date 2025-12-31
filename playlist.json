@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "brand": "AeroVista Presents: EchoVerse",
+    "series": "SwampHop • New Year Transmission",
+    "version": "playlist.v1",
+    "basePath": "audio/",
+    "notes": "Main playlist includes only full songs. Sweepers are injected every 2 songs (pattern: dig → megahits → mhits → swamp_goes_digital → rush)."
+  },
+  "sweepers": {
+    "enabled": true,
+    "insertEverySongs": 2,
+    "rotation": [
+      { "title": "EV Digital ID", "artist": "EchoVerse Radio", "src": "ev.dig.mp3", "kind": "sweeper", "viz": "radial", "durationHintSec": 8 },
+      { "title": "EV MegaHits", "artist": "EchoVerse Radio", "src": "ev.megahits.mp3", "kind": "sweeper", "viz": "bars", "durationHintSec": 8 },
+      { "title": "EV MegaHits (Alt)", "artist": "EchoVerse Radio", "src": "ev.mhits.mp3", "kind": "sweeper", "viz": "bars", "durationHintSec": 11 },
+      { "title": "EV Swamp Goes Digital", "artist": "EchoVerse Radio", "src": "ev.swamp_goes_digital.mp3", "kind": "sweeper", "viz": "particles", "durationHintSec": 6 },
+      { "title": "EV Rush", "artist": "EchoVerse Radio", "src": "ev.rush.mp3", "kind": "sweeper", "viz": "wave", "durationHintSec": 5 }
+    ]
+  },
+  "tracks": [
+    {
+      "title": "SwampHop Worldwide (CDA Midnight)",
+      "artist": "EchoVerse • AeroVista",
+      "src": "swamphop_worldwide.mp3",
+      "kind": "song",
+      "viz": "aurora",
+      "tags": ["swamphop", "bass-led", "new year", "CDA"]
+    },
+    {
+      "title": "Bass Don’t Lie",
+      "artist": "EchoVerse • AeroVista",
+      "src": "bass_dont_lie.mp3",
+      "kind": "song",
+      "viz": "bars",
+      "tags": ["sub", "hypnotic", "real ones"]
+    },
+
+    {
+      "title": "No Witnesses",
+      "artist": "EchoVerse • AeroVista",
+      "src": "no_witnesses.mp3",
+      "kind": "song",
+      "viz": "aurora",
+      "tags": ["grind", "dark", "private battles"]
+    },
+    {
+      "title": "I Don’t Explain",
+      "artist": "EchoVerse • AeroVista",
+      "src": "i_dont_explain.mp3",
+      "kind": "song",
+      "viz": "bars",
+      "tags": ["boundaries", "mature", "calm dominance"]
+    },
+
+    {
+      "title": "Docklight Drip",
+      "artist": "EchoVerse • AeroVista",
+      "src": "docklight_drip.mp3",
+      "kind": "song",
+      "viz": "particles",
+      "tags": ["late night", "minimal", "drip"]
+    },
+    {
+      "title": "Lag Spike Love",
+      "artist": "EchoVerse • AeroVista",
+      "src": "lag_spike_love.mp3",
+      "kind": "song",
+      "viz": "radial",
+      "tags": ["digital", "catchy", "contrast"]
+    },
+
+    {
+      "title": "Upgrade Season",
+      "artist": "EchoVerse • AeroVista",
+      "src": "upgrade_season.mp3",
+      "kind": "song",
+      "viz": "wave",
+      "tags": ["anthem", "forward", "momentum"]
+    },
+    {
+      "title": "SwampHop: Resolution Run (2026)",
+      "artist": "EchoVerse • AeroVista",
+      "src": "swamphop_resolution_run.mp3",
+      "kind": "song",
+      "viz": "particles",
+      "tags": ["swamphop", "new year", "mission"]
+    },
+
+    {
+      "title": "New Year’s Echo 2026 (CDA Edition)",
+      "artist": "EchoVerse • AeroVista",
+      "src": "new_years_echo_2026.mp3",
+      "kind": "song",
+      "viz": "aurora",
+      "tags": ["cinematic", "hopeful", "CDA"]
+    },
+    {
+      "title": "Lake Effect Countdown",
+      "artist": "EchoVerse • AeroVista",
+      "src": "lake_effect_countdown.mp3",
+      "kind": "song",
+      "viz": "bars",
+      "tags": ["party", "countdown", "downtown"]
+    },
+
+    {
+      "title": "SwampHop Worldwide (Alt)",
+      "artist": "EchoVerse • AeroVista",
+      "src": "swamphop_worldwide_alt.mp3",
+      "kind": "song",
+      "viz": "aurora",
+      "tags": ["alt", "loopback", "outro"]
+    },
+
+    {
+      "title": "SwampHop: Resolution Run (Alt)",
+      "artist": "EchoVerse • AeroVista",
+      "src": "swamphop_resolution_run.alt.mp3",
+      "kind": "song",
+      "viz": "particles",
+      "tags": ["alt", "version"]
+    }
+  ]
+}
