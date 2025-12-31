@@ -373,42 +373,12 @@ const VIZ_MODES = [
   { id:"aurora",   name:"Aurora" },
 ];
 
-const tracks = [
-  {
-    title: "New Year’s Echo 2026 (CDA Edition)",
-    artist: "EchoVerse • AeroVista",
-    tags: ["cinematic","hopeful","CDA"],
-    src: "audio/new_years_echo_2026.mp3",  // <-- CHANGE ME
-    defaultViz: "aurora"
-  },
-  {
-    title: "Lake Effect Countdown",
-    artist: "EchoVerse • AeroVista",
-    tags: ["party","chant","downtown"],
-    src: "audio/lake_effect_countdown.mp3", // <-- CHANGE ME
-    defaultViz: "bars"
-  },
-  {
-    title: "Aurora Over Sherman",
-    artist: "EchoVerse • AeroVista",
-    tags: ["chillwave","dreamy","night drive"],
-    src: "audio/aurora_over_sherman.mp3", // <-- CHANGE ME
-    defaultViz: "wave"
-  },
-  {
-    title: "EchoVerse Midnight Radio",
-    artist: "EchoVerse • AeroVista",
-    tags: ["indie-electro","anthem","radio"],
-    src: "audio/echoverse_midnight_radio.mp3", // <-- CHANGE ME
-    defaultViz: "radial"
-  },
-  {
-    title: "SwampHop: Resolution Run (2026)",
-    artist: "EchoVerse • AeroVista",
-    tags: ["swamphop","140 halftime","8-bit"],
-    src: "audio/resolution_run_2026.mp3", // <-- CHANGE ME
-    defaultViz: "particles"
-  }
+let tracks = [];
+const sweepers = [
+    { title: "SWEEPER: Swamp Goes Digital", src: "audio/ev.swamp_goes_digital.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" },
+    { title: "SWEEPER: Dig", src: "audio/ev.dig.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" },
+    { title: "SWEEPER: Megahits", src: "audio/ev.megahits.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" },
+    { title: "SWEEPER: Rush", src: "audio/ev.rush.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" }
 ];
 
 // ---------- State ----------
@@ -953,12 +923,49 @@ syncMobileButtons();
 btnToggleSidebar.onclick = ()=> sidebar.classList.toggle("open");
 btnCloseSidebar.onclick  = ()=> sidebar.classList.remove("open");
 
-// Initial load
-renderList();
-loadTrack(state.i, false);
-state.uiHidden && controls.classList.add("hidden");
-setHUD();
-scheduleAutohide();
+async function main() {
+    try {
+        const response = await fetch('playlist.json');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const mainTracks = await response.json();
+        
+        const newPlayQueue = [];
+        let sweeperIndex = 0;
+        for (let i = 0; i < mainTracks.length; i++) {
+            newPlayQueue.push(mainTracks[i]);
+            if ((i + 1) % 2 === 0 && i < mainTracks.length - 1) {
+                // Add a sweeper, rotating through the list
+                const sweeper = { ...sweepers[sweeperIndex % sweepers.length] };
+                newPlayQueue.push(sweeper);
+                sweeperIndex++;
+            }
+        }
+        
+        tracks = newPlayQueue;
+
+        // This part is from the original state loading, but now it runs after tracks are loaded.
+        try{
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+            if(saved && typeof saved === "object"){
+                state = { ...state, ...saved };
+                state.i = Math.max(0, Math.min(tracks.length-1, state.i|0));
+                if(!VIZ_MODES.some(v=>v.id===state.viz)) state.viz = tracks[state.i]?.defaultViz || "bars";
+            }
+        }catch{}
+        
+        // Initial load calls
+        renderList();
+        loadTrack(state.i, false);
+        state.uiHidden && controls.classList.add("hidden");
+        scheduleAutohide();
+
+    } catch (error) {
+        console.error("Failed to initialize playlist:", error);
+        trackList.innerHTML = `<div class="track"><div class="t" style="color:red">Error: Could not load playlist.json</div></div>`;
+    }
+}
+
+main();
 </script>
 </body>
 </html>
