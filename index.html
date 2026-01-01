@@ -634,21 +634,6 @@ function fmtTime(s){
   return `${m}:${String(r).padStart(2,"0")}`;
 }
 
-// ---------- Cover Images ----------
-function artForTrack(t){
-  const file = (t.src || "").split("/").pop();           // e.g. no_witnesses.mp3
-  const base = file.replace(/\.mp3$/i,"");               // no_witnesses
-
-  // Handle special naming cases
-  const specialMappings = {
-    'new_years_echo_2026': 'new_years_echo',
-    'swamphop__resolution_run.alt': 'swamphop__resolution_run_alt'
-  };
-
-  const finalBase = specialMappings[base] || base;
-  return `images/${finalBase}.png`;
-}
-
 // ---------- Playlist UI ----------
 function renderList(){
   trackList.innerHTML = "";
@@ -670,7 +655,7 @@ function setHUD(){
   // Set cover image
   const coverImg = document.getElementById("coverImg");
   if (coverImg) {
-    coverImg.src = artForTrack(tr);
+    coverImg.src = tr.art;
     coverImg.onerror = () => coverImg.src = "images/av_presents_ev.png";
   }
 
@@ -786,6 +771,17 @@ function loadTrack(i, autoplay=false){
   if(def && VIZ_MODES.some(v=>v.id===def)){
     state.viz = def;
   }
+
+  // Set cover image as background
+  const tr = tracks[state.i];
+  document.body.style.backgroundImage =
+    `radial-gradient(1200px 700px at 20% 10%, rgba(120,200,255,.18), transparent 60%),
+     radial-gradient(900px 600px at 80% 40%, rgba(180,120,255,.14), transparent 62%),
+     linear-gradient(180deg, var(--bg1), var(--bg0)),
+     url('${tr.art}')`;
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundRepeat = "no-repeat";
 
   audio.src = tracks[state.i].src;
   audio.load();
@@ -1142,14 +1138,21 @@ async function main() {
     const newPlayQueue = [];
     let sweeperIndex = 0;
 
+    const basePath = (playlist.meta?.basePath || "");
+    const artBase  = (playlist.meta?.artBasePath || "images/");
+
     for (let i = 0; i < mainTracks.length; i++) {
       const tr = mainTracks[i];
 
       // Normalize fields your UI expects
+      const srcFull = basePath + tr.src;
+      const derivedCover = tr.src.replace(/\.mp3$/i, ".png");
+
       newPlayQueue.push({
         title: tr.title,
         artist: tr.artist,
-        src: (playlist.meta?.basePath || "") + tr.src,
+        src: srcFull,
+        art: artBase + (tr.art || derivedCover),
         tags: tr.tags || [],
         defaultViz: tr.viz || "bars"
       });
@@ -1167,6 +1170,7 @@ async function main() {
           title: s.title,
           artist: s.artist,
           src: (playlist.meta?.basePath || "") + s.src,
+          art: artBase + "av_presents_ev.png", // default sweeper art
           tags: ["sweeper"],
           defaultViz: s.viz
         });
@@ -1187,6 +1191,15 @@ async function main() {
         }
       }
     } catch {}
+
+    // Force controls visible on mobile (ignore uiHidden from desktop)
+    const IS_MOBILE = window.matchMedia("(max-width: 980px)").matches;
+    if (IS_MOBILE) {
+      state.uiHidden = false;
+      controls.classList.remove("hidden");
+      btnHide.textContent = "Hide UI";
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    }
 
     renderList();
     loadTrack(state.i, false);
