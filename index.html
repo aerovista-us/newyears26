@@ -14,6 +14,7 @@
       border:1px solid rgba(255,255,255,.14);
       background:
         linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.10));
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
       box-shadow: 0 20px 60px rgba(0,0,0,.55);
     }
@@ -97,6 +98,7 @@
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow:hidden;
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
     }
 
@@ -202,6 +204,7 @@
       border-radius:16px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.22);
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       max-width:min(560px, 76vw);
     }
@@ -225,9 +228,11 @@
 
     /* Controls */
     .controls{
-      padding:12px;
+      padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
       display:flex; gap:12px; align-items:center;
       background: rgba(0,0,0,.24);
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
     }
     .controls .left{display:flex; gap:10px; align-items:center}
@@ -254,6 +259,7 @@
       border-radius:16px;
       border:1px solid var(--line);
       background: rgba(0,0,0,.30);
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
       box-shadow: var(--shadow);
       pointer-events: auto !important;
@@ -288,6 +294,13 @@
       .stage {
         height: 100vh !important;
         min-height: 100vh !important;
+        /* Remove panel effects so controls can be fixed to viewport */
+        backdrop-filter: none !important;
+        transform: none !important;
+        perspective: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
       }
 
       canvas {
@@ -302,8 +315,10 @@
         bottom: 8px !important;
         z-index: 50 !important;
         padding: 8px 12px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom));
         border-radius: 16px;
         background: rgba(0,0,0,.6);
+        -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255,255,255,.14);
         box-shadow: 0 12px 40px rgba(0,0,0,.5);
@@ -372,8 +387,10 @@
         bottom: 6px !important;
         z-index: 50 !important;
         padding: 6px 10px;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom));
         border-radius: 14px;
         background: rgba(0,0,0,.65);
+        -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255,255,255,.14);
         box-shadow: 0 10px 30px rgba(0,0,0,.5);
@@ -498,7 +515,7 @@
         </div>
 
         <div class="mid">
-          <input id="seek" class="range" type="range" min="0" max="1000" value="0" />
+          <input id="seek" class="range" type="range" min="0" max="1000" value="0" aria-label="Seek" />
           <div class="timeRow">
             <span id="tCur">0:00</span>
             <span id="tDur">0:00</span>
@@ -508,7 +525,7 @@
         <div class="right">
           <button id="btnBT" class="btn pill primary">BT: ON</button>
           <button id="btnMute" class="btn pill">Mute</button>
-          <input id="vol" class="range" type="range" min="0" max="1" step="0.01" value="0.85" style="width:140px" />
+          <input id="vol" class="range" type="range" min="0" max="1" step="0.01" value="0.85" style="width:140px" aria-label="Volume" />
         </div>
       </div>
 
@@ -535,12 +552,6 @@ const VIZ_MODES = [
 ];
 
 let tracks = [];
-const sweepers = [
-    { title: "SWEEPER: Swamp Goes Digital", src: "audio/ev.swamp_goes_digital.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" },
-    { title: "SWEEPER: Dig", src: "audio/ev.dig.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" },
-    { title: "SWEEPER: Megahits", src: "audio/ev.megahits.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" },
-    { title: "SWEEPER: Rush", src: "audio/ev.rush.mp3", artist: "EchoVerse Interlude", tags: ["sweeper"], defaultViz: "radial" }
-];
 
 // ---------- State ----------
 let state = {
@@ -845,10 +856,16 @@ btnMute.onclick = ()=>{
 // ---------- Controls / UI hide ----------
 let hideTimer = null;
 function scheduleAutohide(){
-  if(state.uiHidden) return;
-  // never hide controls on phones - too frustrating
-  if (window.matchMedia("(max-width: 980px)").matches) return;
+  // ALWAYS ensure visible first
   controls.classList.remove("hidden");
+
+  if(state.uiHidden && !window.matchMedia("(max-width: 980px)").matches){
+    controls.classList.add("hidden");
+    return;
+  }
+
+  if (window.matchMedia("(max-width: 980px)").matches) return;
+
   clearTimeout(hideTimer);
   hideTimer = setTimeout(()=> controls.classList.add("hidden"), 2500);
 }
@@ -916,15 +933,22 @@ function energy(){
   return sum / (n*255);
 }
 
-// Particles system
-const parts = Array.from({length: 110}, ()=>({
+const IS_MOBILE = window.matchMedia("(max-width: 980px)").matches;
+const parts = Array.from({length: IS_MOBILE ? 55 : 110}, () => ({
   x: Math.random(), y: Math.random(),
   vx:(Math.random()-.5)*0.12, vy:(Math.random()-.5)*0.12,
   r: 0.8 + Math.random()*2.2
 }));
 
-function draw(){
+let lastFrame = 0;
+function draw(ts){
   raf = requestAnimationFrame(draw);
+
+  // Throttle on mobile to ~30fps
+  if (window.matchMedia("(max-width: 980px)").matches) {
+    if (ts - lastFrame < 33) return;
+    lastFrame = ts;
+  }
   const w = vizWrap.clientWidth, h = vizWrap.clientHeight;
 
   // background wash (subtle trailing)
@@ -956,7 +980,7 @@ function draw(){
   }
 
   if(state.viz === "bars"){
-    const bars = 72;
+    const bars = IS_MOBILE ? 44 : 72;
     const step = Math.floor(dataFreq.length / bars);
     const bw = w / bars;
     for(let i=0;i<bars;i++){
@@ -989,14 +1013,14 @@ function draw(){
 
   else if(state.viz === "radial"){
     const cx=w/2, cy=h/2;
-    const rings = 5;
+    const rings = IS_MOBILE ? 3 : 5;
+    const pts = IS_MOBILE ? 140 : 220;
     for(let r=1;r<=rings;r++){
       const base = (Math.min(w,h)*0.10) * r;
       const wobble = (0.02 + e*0.22) * base;
       g.lineWidth = 2;
       g.strokeStyle = `rgba(255,255,255,${0.08 + r*0.05 + e*0.30})`;
       g.beginPath();
-      const pts = 220;
       for(let i=0;i<=pts;i++){
         const a = (i/pts)*Math.PI*2;
         const idx = Math.floor((i/pts) * (dataFreq.length-1));
@@ -1093,7 +1117,7 @@ document.addEventListener("pointerdown", (e) => {
   // ignore taps on buttons/inputs
   if (e.target.closest("button, a, input, select, textarea")) return;
   forceShowControls();
-}, { passive: true });
+});
 
 // ---------- iOS Playback Fixes ----------
 async function iosResumeAudio() {
@@ -1289,7 +1313,7 @@ main();
 
 <!-- iOS tap-to-continue overlay -->
 <div id="tapToContinue" style="display:none; position:fixed; inset:0; z-index:9999;
-background:rgba(0,0,0,.7); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+background:rgba(0,0,0,.7); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
   <button style="min-height:56px; padding:14px 18px; border-radius:16px; background: linear-gradient(135deg, rgba(0,255,170,.18), rgba(255,90,220,.14)); border: 1px solid rgba(255,255,255,.14); color: white; font-weight: 600;">
     Tap to continue ▶
   </button>
