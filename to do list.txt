@@ -1,6 +1,0 @@
-DONE:
-- Add -webkit-backdrop-filter everywhere you use blur
-- Add a “performance mode” on mobile: cap the visualizer FPS
-- Reduce particle count on mobile
-- Canvas “work” reduction: smaller bars/rings on mobile
-- Fix scheduleAutohide() ordering (controls bug)
