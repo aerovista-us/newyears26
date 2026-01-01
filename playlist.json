@@ -158,7 +158,7 @@
     {
       "title": "SwampHop: Resolution Run (Alt)",
       "artist": "EchoVerse • AeroVista",
-      "src": "swamphop_resolution_run.alt.mp3",
+      "src": "swamphop_resolution_run_alt.mp3",
       "kind": "song",
       "viz": "particles",
       "tags": ["alt", "resolve", "version"]
@@ -175,7 +175,7 @@
       "title": "EV MegaHits (Micro)",
       "artist": "EchoVerse Radio",
       "src": "ev.mhits.mp3",
-      "kind": "song",
+      "kind": "sweeper",
       "viz": "bars",
       "tags": ["micro", "sweeper", "hidden"]
     }
