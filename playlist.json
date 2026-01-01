@@ -126,7 +126,7 @@
     {
       "title": "SwampHop: Resolution Run",
       "artist": "EchoVerse • AeroVista",
-      "src": "swamphop__resolution_run.mp3",
+      "src": "swamphop_resolution_run.mp3",
       "kind": "song",
       "viz": "particles",
       "tags": ["swamphop", "mission", "commitment"]
@@ -158,7 +158,7 @@
     {
       "title": "SwampHop: Resolution Run (Alt)",
       "artist": "EchoVerse • AeroVista",
-      "src": "swamphop__resolution_run.alt.mp3",
+      "src": "swamphop_resolution_run.alt.mp3",
       "kind": "song",
       "viz": "particles",
       "tags": ["alt", "resolve", "version"]
