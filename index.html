@@ -260,6 +260,56 @@
       .mobileBar{display:flex}
       .app{padding-top:74px}
     }
+
+    /* ===== Mobile portrait fixes ===== */
+    @media (max-width: 520px) {
+      /* stack layout vertically */
+      .app {
+        display: block !important;
+        height: 100svh; /* better on iOS */
+      }
+
+      /* collapse sidebar by default */
+      .sidebar {
+        display: none !important;
+      }
+
+      /* keep the visualizer visible */
+      .stage {
+        height: 42svh !important;
+        min-height: 260px;
+      }
+
+      canvas {
+        height: 100% !important;
+      }
+
+      /* controls become a sticky bottom panel */
+      .controls {
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 10px !important;
+        z-index: 50;
+        padding: 12px;
+        border-radius: 18px;
+        background: rgba(0,0,0,.55);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,.14);
+        box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      }
+
+      /* make buttons easier to tap */
+      .btn {
+        min-height: 44px;
+        padding: 10px 12px;
+      }
+
+      /* add bottom padding so content doesn't sit behind controls */
+      .vizWrap {
+        padding-bottom: 120px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -352,7 +402,7 @@
         </div>
       </div>
 
-      <audio id="audio" crossorigin="anonymous"></audio>
+      <audio id="audio" playsinline preload="metadata"></audio>
     </main>
   </div>
 
@@ -575,9 +625,9 @@ function ensureAudioGraph(){
     .connect(comp)
     .connect(outGain);
 
-  // Send to analyzer + destination
+  // Send to analyzer + destination (parallel routing for iOS compatibility)
+  outGain.connect(ctx.destination);
   outGain.connect(analyser);
-  analyser.connect(ctx.destination);
 
   dataTime = new Uint8Array(analyser.fftSize);
   dataFreq = new Uint8Array(analyser.frequencyBinCount);
@@ -589,8 +639,11 @@ async function play(){
   if (isFirstTime) {
     applyPreset_BT(true);
   }
-  if(ctx.state === "suspended") await ctx.resume();
-  await audio.play();
+  await iosResumeAudio();
+  await audio.play().catch(err => {
+    // iOS may block autoplay - show tap overlay
+    showTapToContinue();
+  });
 }
 
 function pause(){ audio.pause(); }
@@ -866,6 +919,28 @@ function startVizLoop(){
   raf = requestAnimationFrame(draw);
 }
 
+// ---------- iOS Playback Fixes ----------
+async function iosResumeAudio() {
+  try {
+    if (ctx && ctx.state !== "running") await ctx.resume();
+  } catch {}
+  try {
+    // iOS sometimes needs load() before play() on src changes
+    audio.load();
+  } catch {}
+}
+
+const tapOverlay = document.getElementById("tapToContinue");
+tapOverlay.addEventListener("click", async () => {
+  tapOverlay.style.display = "none";
+  await iosResumeAudio();
+  await audio.play().catch(()=>{});
+});
+
+function showTapToContinue(){
+  tapOverlay.style.display = "flex";
+}
+
 // ---------- Events ----------
 btnPlay.onclick = togglePlay;
 btnPrev.onclick = prev;
@@ -999,5 +1074,13 @@ async function main() {
 
 main();
 </script>
+
+<!-- iOS tap-to-continue overlay -->
+<div id="tapToContinue" style="display:none; position:fixed; inset:0; z-index:9999;
+background:rgba(0,0,0,.7); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+  <button style="min-height:56px; padding:14px 18px; border-radius:16px; background: linear-gradient(135deg, rgba(0,255,170,.18), rgba(255,90,220,.14)); border: 1px solid rgba(255,255,255,.14); color: white; font-weight: 600;">
+    Tap to continue ▶
+  </button>
+</div>
 </body>
 </html>
