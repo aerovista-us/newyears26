@@ -325,6 +325,13 @@
       .vizWrap {
         padding-bottom: 90px !important;
       }
+
+      /* force proper z-index stacking on mobile */
+      .vizWrap { position: relative; z-index: 1; }
+      canvas { position: relative; z-index: 1; }
+      .overlayTop { position: absolute; z-index: 20; }
+      .controls { position: fixed; z-index: 999; }
+      .mobileBar { z-index: 1000; }
     }
 
     /* ===== Mobile landscape fixes ===== */
@@ -388,6 +395,13 @@
       .vizWrap {
         padding-bottom: 70px !important;
       }
+
+      /* force proper z-index stacking on landscape mobile */
+      .vizWrap { position: relative; z-index: 1; }
+      canvas { position: relative; z-index: 1; }
+      .overlayTop { position: absolute; z-index: 20; }
+      .controls { position: fixed; z-index: 999; }
+      .mobileBar { z-index: 1000; }
 
       /* adjust HUD for landscape */
       .overlayTop {
