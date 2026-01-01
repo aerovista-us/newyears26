@@ -274,40 +274,41 @@
         display: none !important;
       }
 
-      /* keep the visualizer visible */
+      /* keep the visualizer visible - give it more space */
       .stage {
-        height: 42svh !important;
-        min-height: 260px;
+        height: 55vh !important;
+        min-height: 320px;
       }
 
       canvas {
         height: 100% !important;
       }
 
-      /* controls become a sticky bottom panel */
+      /* controls become a more compact sticky bottom panel */
       .controls {
         position: fixed !important;
-        left: 10px !important;
-        right: 10px !important;
-        bottom: 10px !important;
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 8px !important;
         z-index: 50;
-        padding: 12px;
-        border-radius: 18px;
-        background: rgba(0,0,0,.55);
+        padding: 8px 12px;
+        border-radius: 16px;
+        background: rgba(0,0,0,.6);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255,255,255,.14);
-        box-shadow: 0 18px 60px rgba(0,0,0,.55);
+        box-shadow: 0 12px 40px rgba(0,0,0,.5);
       }
 
-      /* make buttons easier to tap */
+      /* make buttons easier to tap but more compact */
       .btn {
-        min-height: 44px;
-        padding: 10px 12px;
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 14px;
       }
 
-      /* add bottom padding so content doesn't sit behind controls */
+      /* reduce bottom padding since controls are more compact */
       .vizWrap {
-        padding-bottom: 120px !important;
+        padding-bottom: 90px !important;
       }
     }
   </style>
