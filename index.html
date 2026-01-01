@@ -255,6 +255,8 @@
       background: rgba(0,0,0,.30);
       backdrop-filter: blur(12px);
       box-shadow: var(--shadow);
+      pointer-events: auto !important;
+      touch-action: manipulation !important;
     }
     @media (max-width: 980px){
       .mobileBar{display:flex}
@@ -290,20 +292,25 @@
         left: 8px !important;
         right: 8px !important;
         bottom: 8px !important;
-        z-index: 50;
+        z-index: 50 !important;
         padding: 8px 12px;
         border-radius: 16px;
         background: rgba(0,0,0,.6);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255,255,255,.14);
         box-shadow: 0 12px 40px rgba(0,0,0,.5);
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
       }
 
       /* make buttons easier to tap but more compact */
       .btn {
-        min-height: 40px;
+        min-height: 44px !important;
         padding: 8px 10px;
         font-size: 14px;
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+        cursor: pointer !important;
       }
 
       /* reduce bottom padding since controls are more compact */
@@ -341,20 +348,25 @@
         left: 6px !important;
         right: 6px !important;
         bottom: 6px !important;
-        z-index: 50;
+        z-index: 50 !important;
         padding: 6px 10px;
         border-radius: 14px;
         background: rgba(0,0,0,.65);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255,255,255,.14);
         box-shadow: 0 10px 30px rgba(0,0,0,.5);
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
       }
 
       /* smaller buttons for landscape */
       .btn {
-        min-height: 36px;
+        min-height: 40px !important;
         padding: 6px 8px;
         font-size: 13px;
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+        cursor: pointer !important;
       }
 
       /* minimal bottom padding for landscape */
