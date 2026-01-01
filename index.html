@@ -311,6 +311,75 @@
         padding-bottom: 90px !important;
       }
     }
+
+    /* ===== Mobile landscape fixes ===== */
+    @media (orientation: landscape) and (max-height: 500px) {
+      /* stack layout vertically but optimize for landscape */
+      .app {
+        display: block !important;
+        height: 100svh;
+      }
+
+      /* hide sidebar in landscape too */
+      .sidebar {
+        display: none !important;
+      }
+
+      /* maximize visualizer in landscape - give even more height */
+      .stage {
+        height: 70vh !important;
+        min-height: 280px;
+      }
+
+      canvas {
+        height: 100% !important;
+      }
+
+      /* compact landscape controls */
+      .controls {
+        position: fixed !important;
+        left: 6px !important;
+        right: 6px !important;
+        bottom: 6px !important;
+        z-index: 50;
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: rgba(0,0,0,.65);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,.14);
+        box-shadow: 0 10px 30px rgba(0,0,0,.5);
+      }
+
+      /* smaller buttons for landscape */
+      .btn {
+        min-height: 36px;
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+
+      /* minimal bottom padding for landscape */
+      .vizWrap {
+        padding-bottom: 70px !important;
+      }
+
+      /* adjust HUD for landscape */
+      .overlayTop {
+        padding: 8px;
+      }
+
+      .hud {
+        padding: 8px 10px;
+        max-width: 50vw;
+      }
+
+      .hud .title {
+        font-size: 16px;
+      }
+
+      .hud .sub {
+        font-size: 11px;
+      }
+    }
   </style>
 </head>
 <body>
