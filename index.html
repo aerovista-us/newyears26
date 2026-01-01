@@ -453,12 +453,9 @@
       <div class="list" id="trackList"></div>
 
       <div class="meta">
-        <div class="row">
-          <div class="kbd">Space: Play/Pause</div>
-          <div class="kbd">V: Visualizer</div>
-        </div>
         <div class="pillrow">
           <button id="btnPrev" class="btn small pill">⟵ Prev</button>
+          <button id="btnPlayPause" class="btn pill primary">▶</button>
           <button id="btnNext" class="btn small pill">Next ⟶</button>
           <button id="btnViz" class="btn small pill primary">Visualizer</button>
         </div>
@@ -568,6 +565,7 @@ const btnNext = document.getElementById("btnNext");
 const btnBack10 = document.getElementById("btnBack10");
 const btnFwd10  = document.getElementById("btnFwd10");
 const btnViz = document.getElementById("btnViz");
+const btnPlayPause = document.getElementById("btnPlayPause");
 const btnFull = document.getElementById("btnFull");
 const btnHide = document.getElementById("btnHide");
 const btnShare = document.getElementById("btnShare");
@@ -1130,6 +1128,7 @@ function showTapToContinue(){
 // ---------- Events ----------
 btnPlay.onclick = togglePlay;
 btnPrev.onclick = prev;
+btnPlayPause.onclick = togglePlay;
 btnNext.onclick = next;
 
 btnBack10.onclick = ()=> audio.currentTime = Math.max(0, audio.currentTime - 10);
@@ -1137,11 +1136,15 @@ btnFwd10.onclick  = ()=> audio.currentTime = Math.min(audio.duration||Infinity, 
 
 audio.addEventListener("play", ()=>{
   btnPlay.textContent = "⏸";
+  btnPlayPause.textContent = "⏸";
   ensureAudioGraph();
   startVizLoop();
   scheduleAutohide();
 });
-audio.addEventListener("pause", ()=> btnPlay.textContent = "▶");
+audio.addEventListener("pause", ()=>{
+  btnPlay.textContent = "▶";
+  btnPlayPause.textContent = "▶";
+});
 audio.addEventListener("loadedmetadata", ()=>{
   tDur.textContent = fmtTime(audio.duration);
 });
