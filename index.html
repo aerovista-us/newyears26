@@ -266,7 +266,7 @@
       /* stack layout vertically */
       .app {
         display: block !important;
-        height: 100svh; /* better on iOS */
+        height: 100vh !important; /* full viewport height */
       }
 
       /* collapse sidebar by default */
@@ -274,10 +274,10 @@
         display: none !important;
       }
 
-      /* keep the visualizer visible - give it more space */
+      /* visualizer fills full height */
       .stage {
-        height: 55vh !important;
-        min-height: 320px;
+        height: 100vh !important;
+        min-height: 100vh !important;
       }
 
       canvas {
@@ -317,7 +317,7 @@
       /* stack layout vertically but optimize for landscape */
       .app {
         display: block !important;
-        height: 100svh;
+        height: 100vh !important;
       }
 
       /* hide sidebar in landscape too */
@@ -325,10 +325,10 @@
         display: none !important;
       }
 
-      /* maximize visualizer in landscape - give even more height */
+      /* visualizer fills full height in landscape too */
       .stage {
-        height: 70vh !important;
-        min-height: 280px;
+        height: 100vh !important;
+        min-height: 100vh !important;
       }
 
       canvas {
