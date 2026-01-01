@@ -930,15 +930,23 @@ async function iosResumeAudio() {
   } catch {}
 }
 
-const tapOverlay = document.getElementById("tapToContinue");
-tapOverlay.addEventListener("click", async () => {
-  tapOverlay.style.display = "none";
-  await iosResumeAudio();
-  await audio.play().catch(()=>{});
+// Initialize tap-to-continue overlay after DOM loads
+document.addEventListener("DOMContentLoaded", () => {
+  const tapOverlay = document.getElementById("tapToContinue");
+  if (tapOverlay) {
+    tapOverlay.addEventListener("click", async () => {
+      tapOverlay.style.display = "none";
+      await iosResumeAudio();
+      await audio.play().catch(()=>{});
+    });
+  }
 });
 
 function showTapToContinue(){
-  tapOverlay.style.display = "flex";
+  const tapOverlay = document.getElementById("tapToContinue");
+  if (tapOverlay) {
+    tapOverlay.style.display = "flex";
+  }
 }
 
 // ---------- Events ----------
