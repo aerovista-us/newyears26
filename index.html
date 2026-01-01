@@ -63,7 +63,7 @@
       --r:18px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{height:100%; min-height:100svh}
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -473,6 +473,7 @@
           <div class="rightBtns">
             <button id="btnFull" class="btn small pill">Full Screen</button>
             <button id="btnHide" class="btn small pill">Hide UI</button>
+            <button id="btnShare" class="btn small pill">Share</button>
           </div>
         </div>
       </div>
@@ -531,10 +532,10 @@ const sweepers = [
 
 // ---------- State ----------
 let state = {
-  i: 0,
+  i: 1, // Start with "SwampHop Worldwide" (index 1) as the opener
   viz: VIZ_MODES[0].id,
   uiHidden: false,
-  vol: 0.85,
+  vol: 0.9,
 };
 
 
@@ -554,6 +555,7 @@ const btnFwd10  = document.getElementById("btnFwd10");
 const btnViz = document.getElementById("btnViz");
 const btnFull = document.getElementById("btnFull");
 const btnHide = document.getElementById("btnHide");
+const btnShare = document.getElementById("btnShare");
 const controls = document.getElementById("controls");
 
 const seek = document.getElementById("seek");
@@ -816,6 +818,12 @@ vol.addEventListener("input", ()=>{
   persist();
 });
 
+// Persist volume changes from other sources (mute button, etc.)
+audio.addEventListener("volumechange", () => {
+  state.vol = audio.volume;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+});
+
 btnMute.onclick = ()=>{
   audio.muted = !audio.muted;
   btnMute.textContent = audio.muted ? "Unmute" : "Mute";
@@ -840,6 +848,27 @@ btnHide.onclick = ()=>{
   btnHide.textContent = state.uiHidden ? "Show UI" : "Hide UI";
   controls.classList.toggle("hidden", state.uiHidden);
   persist();
+};
+
+btnShare.onclick = async () => {
+  const url = location.href;
+  const title = "EchoVerse • New Year's Player";
+  try {
+    if (navigator.share) {
+      await navigator.share({ title, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    }
+  } catch (err) {
+    // Fallback: just copy to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    } catch (clipboardErr) {
+      alert("Share link: " + url);
+    }
+  }
 };
 
 // ---------- Visualizer ----------
@@ -1037,6 +1066,22 @@ function startVizLoop(){
   raf = requestAnimationFrame(draw);
 }
 
+// ---------- Mobile Emergency Controls ----------
+function forceShowControls(){
+  controls.classList.remove("hidden");
+  state.uiHidden = false;
+  btnHide.textContent = "Hide UI";
+  scheduleAutohide();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+
+// Emergency tap anywhere to reveal controls (mobile-friendly)
+document.addEventListener("pointerdown", (e) => {
+  // ignore taps on buttons/inputs
+  if (e.target.closest("button, a, input, select, textarea")) return;
+  forceShowControls();
+}, { passive: true });
+
 // ---------- iOS Playback Fixes ----------
 async function iosResumeAudio() {
   try {
@@ -1093,6 +1138,12 @@ audio.addEventListener("timeupdate", ()=>{
 });
 
 audio.addEventListener("ended", ()=> next());
+
+// Skip broken tracks automatically
+audio.addEventListener("error", () => {
+  console.warn("Audio error, skipping:", audio.src);
+  next(); // Auto-skip to next track
+});
 
 // Keyboard shortcuts
 window.addEventListener("keydown", (e)=>{
