@@ -638,7 +638,15 @@ function fmtTime(s){
 function artForTrack(t){
   const file = (t.src || "").split("/").pop();           // e.g. no_witnesses.mp3
   const base = file.replace(/\.mp3$/i,"");               // no_witnesses
-  return `images/${base}.png`;
+
+  // Handle special naming cases
+  const specialMappings = {
+    'new_years_echo_2026': 'new_years_echo',
+    'swamphop__resolution_run.alt': 'swamphop__resolution_run_alt'
+  };
+
+  const finalBase = specialMappings[base] || base;
+  return `images/${finalBase}.png`;
 }
 
 // ---------- Playlist UI ----------
