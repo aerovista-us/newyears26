@@ -1,0 +1,19 @@
+{
+  "name": "EchoVerse New Year Player",
+  "short_name": "EchoVerse",
+  "description": "AeroVista Presents: EchoVerse - New Year Transmission",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0d16",
+  "theme_color": "#00ffaa",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["music", "entertainment"],
+  "lang": "en-US"
+}

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>EchoVerse • New Year’s Player</title>
   <link rel="icon" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
   <style>
     .av-callout{
       pointer-events:none;
@@ -834,7 +835,7 @@ let hideTimer = null;
 function scheduleAutohide(){
   if(state.uiHidden) return;
   // never hide controls on phones - too frustrating
-  if (window.matchMedia("(max-width: 520px)").matches) return;
+  if (window.matchMedia("(max-width: 980px)").matches) return;
   controls.classList.remove("hidden");
   clearTimeout(hideTimer);
   hideTimer = setTimeout(()=> controls.classList.add("hidden"), 2500);
