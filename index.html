@@ -271,10 +271,17 @@
         height: 100vh !important; /* full viewport height */
       }
 
-      /* collapse sidebar by default */
+      /* allow sidebar to toggle open/close instead of force hiding */
       .sidebar {
-        display: none !important;
+        display: flex !important;
+        position: fixed;
+        left: 8px; right: 8px; top: 72px; /* under mobileBar */
+        height: 62vh;
+        z-index: 60;
+        transform: translateY(-120%);
+        transition: .22s ease;
       }
+      .sidebar.open { transform: translateY(0); }
 
       /* visualizer fills full height */
       .stage {
@@ -327,10 +334,17 @@
         height: 100vh !important;
       }
 
-      /* hide sidebar in landscape too */
+      /* allow sidebar to toggle in landscape too */
       .sidebar {
-        display: none !important;
+        display: flex !important;
+        position: fixed;
+        left: 6px; right: 6px; top: 60px; /* under mobileBar */
+        height: 75vh;
+        z-index: 60;
+        transform: translateY(-120%);
+        transition: .22s ease;
       }
+      .sidebar.open { transform: translateY(0); }
 
       /* visualizer fills full height in landscape too */
       .stage {
@@ -448,6 +462,7 @@
             <div class="av-sub">SwampHop • New Year Transmission</div>
           </div>
           <div class="hud">
+            <img id="coverImg" src="images/av_presents_ev.png" alt="Cover" style="width: 80px; height: 80px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,.2);">
             <div>
               <p class="title" id="hudTitle">—</p>
               <p class="sub" id="hudSub">—</p>
@@ -619,6 +634,13 @@ function fmtTime(s){
   return `${m}:${String(r).padStart(2,"0")}`;
 }
 
+// ---------- Cover Images ----------
+function artForTrack(t){
+  const file = (t.src || "").split("/").pop();           // e.g. no_witnesses.mp3
+  const base = file.replace(/\.mp3$/i,"");               // no_witnesses
+  return `images/${base}.png`;
+}
+
 // ---------- Playlist UI ----------
 function renderList(){
   trackList.innerHTML = "";
@@ -636,6 +658,14 @@ function renderList(){
 
 function setHUD(){
   const tr = tracks[state.i];
+
+  // Set cover image
+  const coverImg = document.getElementById("coverImg");
+  if (coverImg) {
+    coverImg.src = artForTrack(tr);
+    coverImg.onerror = () => coverImg.src = "images/av_presents_ev.png";
+  }
+
   hudTitle.textContent = tr.title;
   hudSub.textContent = tr.artist + " • Visualizer: " + (VIZ_MODES.find(v=>v.id===state.viz)?.name || state.viz);
   hudTags.innerHTML = "";
@@ -791,6 +821,8 @@ btnMute.onclick = ()=>{
 let hideTimer = null;
 function scheduleAutohide(){
   if(state.uiHidden) return;
+  // never hide controls on phones - too frustrating
+  if (window.matchMedia("(max-width: 520px)").matches) return;
   controls.classList.remove("hidden");
   clearTimeout(hideTimer);
   hideTimer = setTimeout(()=> controls.classList.add("hidden"), 2500);
